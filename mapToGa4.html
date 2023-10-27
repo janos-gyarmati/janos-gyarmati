@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>mapToGa4</title>
+  </head>
+  <body>
+    <div style="display: flex; gap: 10px; padding: 5px">
+      <div style="flex: 1; display: flex; flex-direction: column">
+        <input
+          style="font-size: 20px; line-height: 1.2; margin-bottom: 10px"
+          type="text"
+          id="gtmInput"
+          placeholder="Insert gtm object without {}"
+        />
+        <input
+          style="font-size: 20px; line-height: 1.2; margin-bottom: 5px"
+          type="text"
+          id="ga4Input"
+          placeholder="Insert tagging-library builder type without {}"
+        />
+        <div style="font-size: 20px; line-height: 1.2; margin-bottom: 5px">
+          Or use a builder type from below
+        </div>
+        <select style="font-size: 20px; line-height: 1.2" id="selectBuilder">
+          <option value="experiments">Experiments</option>
+          <option value="gameInteractions">Game Interactions</option>
+          <option value="gameLaunch">Game Launch</option>
+          <option value="interface">Interface</option>
+          <option value="navigation">Navigation</option>
+        </select>
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <button
+          style="
+            font-size: 20px;
+            line-height: 1.2;
+            flex: 1;
+            margin-bottom: 10px;
+          "
+          onclick="getGa4Mapping()"
+        >
+          Get to clipboard corresponding GA4
+        </button>
+        <div style="display: flex">
+          <input
+            style="font-size: 20px; line-height: 1.2; margin-right: 10px"
+            type="text"
+            id="uaNumber"
+            placeholder="Insert a CD no."
+          />
+          <button
+            style="font-size: 20px; line-height: 1.2; flex: 1"
+            onclick="getGa4CorrespondingName()"
+          >
+            Get GA4
+          </button>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; padding: 5px">
+      <!-- <div style="font-size: 20px; line-height: 1.2">GA4 object: </div> -->
+      <textarea
+        rows="4"
+        style="flex: 1; font-size: 20px; line-height: 1.2"
+        type="text"
+        id="resultInput"
+      ></textarea>
+    </div>
+
+    <script>
+      const builders = {
+        experiments: `expId: string;
+                      varId: string;
+                      accountId: string;
+                      userId: string;`,
+        gameInteractions: `gameName: string;
+                            gameId: string;
+                            position: string;
+                            gameProvider: string;
+                            moduleDisplayOrder: string;
+                            gameState: string;
+                            gameAction?: string;
+                            gameType?: string;
+                            action: string;
+                            module: string;
+                            error?: string;
+                            stake: number;
+                            winnings: number;`,
+        gameLaunch: `gameId: string;
+                    gameName: string;
+                    gameProvider: string;
+                    position: string;
+                    moduleDisplayOrder: string;
+                    gameState?: string;
+                    gameAction?: string;
+                    swimlineType?: string;
+                    promotionIndicator?: string;
+                    gameFilter?: string;
+                    destinationUrl?: string;
+                    module: string;
+                    type: string;
+                    error?: string;`,
+        interface: `elementText: string;
+                    eventContext: string;
+                    module: string;
+                    action: string;
+                    swimlaneType?: string;
+                    gameFilter?: string;`,
+        navigation: `elementText: string;
+                    eventContext: string;
+                    module: string;
+                    gameName?: string;
+                    gameId?: string;
+                    gameProvider?: string;
+                    swimlaneType?: string;
+                    gameFilter?: string;
+                    position: string;
+                    moduleDisplayOrder: string;
+                    destinationUrl: string;
+                    type: string;`,
+      };
+      const mappings = {
+        1: "account_id",
+        2: "vertical",
+        3: "module",
+        4: "",
+        5: "items.sport",
+        6: "items.competition",
+        7: "",
+        8: "",
+        9: "bet_receipt",
+        10: "items.bet_type",
+        11: "items.bet_direction",
+        12: "game_name",
+        13: "game_id",
+        14: "items.sport_id",
+        15: "locale",
+        16: "currency",
+        17: "product",
+        18: "promotion_type",
+        19: "bet_response",
+        20: "login_status",
+        21: "reg_status",
+        22: "",
+        23: "",
+        24: "",
+        25: "",
+        26: "const_id",
+        27: "jurisdiction",
+        28: "",
+        29: "bet_id",
+        30: "",
+        31: "sub_offer_name",
+        32: "offer_copy",
+        33: "offer_image",
+        34: "destination_url",
+        35: "",
+        36: "",
+        37: "account_balance",
+        38: "odds_display",
+        39: "",
+        40: "language",
+        41: "",
+        42: "",
+        43: "",
+        44: "",
+        45: "",
+        46: "",
+        47: "",
+        48: "",
+        49: "country",
+        50: "",
+        51: "",
+        52: "",
+        53: "",
+        54: "",
+        55: "",
+        56: "orientation",
+        57: "rfr",
+        58: "sid",
+        59: "efid",
+        60: "",
+        61: "",
+        62: "clkid",
+        63: "bid",
+        64: "pid",
+        65: "promo_code",
+        66: "ttp",
+        67: "position",
+        68: "",
+        69: "",
+        70: "cashout_type",
+        71: "cashout_position",
+        72: "",
+        73: "",
+        74: "game_provider",
+        75: "",
+        76: "",
+        77: "payment_transaction_id",
+        78: "",
+        79: " in_play_indicator ",
+        80: "",
+        81: "",
+        82: "",
+        83: "game_filter",
+        84: "items.event_id",
+        85: "bet_origin_location",
+        86: "",
+        87: "promotion_name",
+        88: "",
+        89: "items.cashout_indicator",
+        90: "notification_type",
+        91: "items.each_way_indicator",
+        92: "",
+        93: "",
+        94: "",
+        95: "",
+        96: "push_message_platform",
+        97: "",
+        98: "",
+        99: "error",
+        100: "",
+        101: "items.market_id",
+        102: "selection_id",
+        103: "module_display_order",
+        104: "vertical",
+        105: "brand",
+        106: "",
+        107: "",
+        108: "",
+        109: "vertical",
+        110: "",
+        111: "promotion_indicator",
+        112: "items.price_at_selection",
+        113: "",
+        114: "",
+        115: "",
+        116: "",
+        117: "",
+        118: "",
+        119: "",
+        120: "swimlane_type",
+        121: "",
+        122: "video_provider_id",
+        123: "video_stream_id",
+        124: "video_stream_name",
+        125: "connection_type",
+        126: "",
+        127: "",
+        128: "",
+        129: "items.competition_id",
+        130: "",
+        131: "items.antepost_flag",
+        132: "selection_name",
+        133: "",
+        134: "",
+        135: "",
+        136: "",
+        137: "",
+        138: "",
+        139: "",
+        140: "",
+        141: "",
+        142: "",
+        143: "game_state",
+        144: "",
+        145: "product_theme",
+        146: "",
+        147: "",
+        148: "",
+        149: "",
+        150: "conversation_id",
+        151: "",
+        152: "",
+      };
+
+      const encodedComma = "_@#$%^___";
+
+      const replaceCommas = (str) => {
+        return str.replace(/\(([^)]+)\)/g, function (match) {
+          return match.replace(/,/g, encodedComma);
+        });
+      };
+      const checkOptional = (str) => {
+        if (str.endsWith("?")) {
+          return str.slice(0, -1);
+        } else {
+          return false;
+        }
+      };
+
+      const getTypeDefault = (type) => {
+        switch (type.trim().toLowerCase()) {
+          case "string":
+            return '""';
+          case "number":
+            return 0;
+          case "boolean":
+            return false;
+          default:
+            return "";
+        }
+      };
+
+      const getGa4CorrespondingName = () => {
+        const inputValue = document.getElementById("uaNumber").value;
+        const textareaInput = document.getElementById("resultInput");
+        textareaInput.value = processUnderscoreInString(mappings[inputValue]);
+        textareaInput.select();
+      }
+
+      const processUnderscoreInString = (inputString) => {
+        let parts = inputString.split("_");
+
+        for (let i = 1; i < parts.length; i++) {
+          parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1);
+        }
+
+        const outputString = parts.join("");
+
+        return outputString;
+      }
+
+      const getGa4Mapping = () => {
+        const cdRegex = /^cd(.*)$/;
+
+        const gtmValue = document.getElementById("gtmInput")?.value;
+        const gtmArr = replaceCommas(gtmValue).split(",");
+        const newGtm = {};
+        let stringObj = "";
+        gtmArr.forEach((elem, index, arr) => {
+          if (index === 0) {
+            stringObj += `{ `;
+          }
+          const propArr = elem.split(":");
+          const key = (propArr[0] || "").trim();
+          const value = (propArr[1] || "")
+            .trim()
+            .replaceAll(encodedComma, ",");
+          const match = key.match(cdRegex);
+          if (match) {
+            const newKey = processUnderscoreInString(mappings[match[1]]);
+            newGtm[newKey] = value;
+            stringObj += `${newKey}: ${value}, `;
+          } else {
+            newGtm[key] = value;
+            stringObj += `${key}: ${value}, `;
+          }
+          if (index === arr.length - 1) {
+            stringObj = stringObj.slice(0, -2);
+            stringObj += ` }`;
+          }
+        });
+        const builderKey = document.getElementById("selectBuilder").value;
+        const ga4Value =
+          document.getElementById("ga4Input").value ||
+          (builderKey && builders[builderKey]);
+        if (ga4Value) {
+          stringObj = "";
+          const ga4Arr = ga4Value.replaceAll(" ", "").split(";");
+          const ga4Div = document.createElement("div");
+          ga4Div.innerHTML = "{";
+          ga4Arr.forEach((elem, index, arr) => {
+            if (index === 0) {
+              stringObj += `{ `;
+            }
+
+            const propArr = elem.split(":");
+            const key = (propArr[0] || "").trim();
+            const value = (propArr[1] || "").trim();
+            const optionalKey = checkOptional(key);
+            if (optionalKey && optionalKey in newGtm) {
+              stringObj += `${optionalKey}: ${newGtm[optionalKey]}, `;
+            }
+            if (!optionalKey) {
+              if (key) {
+                if (key === "elementText" && !newGtm[key] && newGtm["label"]) {
+                  newGtm[key] = newGtm["label"];
+                }
+                if (key === "eventContext" && !newGtm[key] && newGtm["event"]) {
+                  newGtm[key] = newGtm["event"];
+                }
+                stringObj += `${key}: ${
+                  newGtm[key] || getTypeDefault(value)
+                }, `;
+              }
+            }
+
+            if (index === arr.length - 1) {
+              stringObj = stringObj.slice(0, -2);
+              stringObj += ` }`;
+            }
+          });
+        }
+        console.log("newGtm", newGtm);
+
+        const textareaInput = document.getElementById("resultInput");
+        textareaInput.value = stringObj;
+        textareaInput.select();
+        document.execCommand("copy");
+      };
+    </script>
+  </body>
+</html>
