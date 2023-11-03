@@ -22,6 +22,7 @@
           Or use a builder type from below
         </div>
         <select style="font-size: 20px; line-height: 1.2" id="selectBuilder">
+          <option value="banner">Banner</option>
           <option value="experiments">Experiments</option>
           <option value="gameInteractions">Game Interactions</option>
           <option value="gameLaunch">Game Launch</option>
@@ -117,6 +118,11 @@
                     moduleDisplayOrder: string;
                     destinationUrl: string;
                     type: string;`,
+        banner: `elementText: string;
+                  bannerName: string;
+                  module: string;
+                  position: string;
+                  action: string;`,
       };
       const mappings = {
         1: "account_id",
@@ -228,7 +234,7 @@
         107: "",
         108: "",
         109: "vertical",
-        110: "",
+        110: "product",
         111: "promotion_indicator",
         112: "items.price_at_selection",
         113: "",
@@ -306,7 +312,7 @@
         const textareaInput = document.getElementById("resultInput");
         textareaInput.value = processUnderscoreInString(mappings[inputValue]);
         textareaInput.select();
-      }
+      };
 
       const processUnderscoreInString = (inputString) => {
         let parts = inputString.split("_");
@@ -318,7 +324,7 @@
         const outputString = parts.join("");
 
         return outputString;
-      }
+      };
 
       const getGa4Mapping = () => {
         const cdRegex = /^cd(.*)$/;
@@ -333,9 +339,7 @@
           }
           const propArr = elem.split(":");
           const key = (propArr[0] || "").trim();
-          const value = (propArr[1] || "")
-            .trim()
-            .replaceAll(encodedComma, ",");
+          const value = (propArr[1] || "").trim().replaceAll(encodedComma, ",");
           const match = key.match(cdRegex);
           if (match) {
             const newKey = processUnderscoreInString(mappings[match[1]]);
