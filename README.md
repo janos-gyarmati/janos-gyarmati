@@ -1,5 +1,5 @@
 
-# matToGA4, Parameters Conversion Tool
+# mapToGA4, Parameters Conversion Tool
 This tool is designed to convert Universal Google Analytics parameters into GA 4 parameters. It’s a simple HTML file that can be used to map Universal Analytics name-value pairs to their corresponding GA 4 parameters.
 
 ## How to Use
