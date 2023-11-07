@@ -93,7 +93,7 @@
                     moduleDisplayOrder: string;
                     gameState?: string;
                     gameAction?: string;
-                    swimlineType?: string;
+                    swimlaneType?: string;
                     promotionIndicator?: string;
                     gameFilter?: string;
                     destinationUrl?: string;
@@ -299,7 +299,7 @@
           case "string":
             return '""';
           case "number":
-            return 0;
+            return undefined;
           case "boolean":
             return false;
           default:
